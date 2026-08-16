@@ -16,10 +16,18 @@ jobs:
           distribution: 'temurin'
 
       - name: Build APK
-        run: gradle assembleDebug
+        run: |
+          # البحث عن المكان الذي يحتوي على ملفات المشروع والدخول إليه
+          if [ -f "build.gradle.kts" ] || [ -f "build.gradle" ]; then
+            gradle assembleDebug
+          else
+            DIR=$(find . -maxdepth 2 -name "build.gradle.kts" -o -name "build.gradle" | head -n 1 | xargs dirname)
+            cd "$DIR"
+            gradle assembleDebug
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Zesty-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"
