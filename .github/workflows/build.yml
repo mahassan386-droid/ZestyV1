@@ -16,10 +16,16 @@ jobs:
           distribution: 'temurin'
 
       - name: Build APK
-        run: gradle assembleDebug
+        # إذا كانت ملفاتك داخل مجلد معين، سيقوم بالأمر من داخل المجلد الرئيسي أو البحث عنه
+        run: |
+          if [ -f "build.gradle.kts" ] || [ -f "build.gradle" ]; then
+            gradle assembleDebug
+          else
+            cd */ && gradle assembleDebug
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Zesty-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/app/build/outputs/apk/debug/app-debug.apk"
