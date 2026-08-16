@@ -15,21 +15,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Find and Build
+      - name: Unzip Project Files
         run: |
-          echo "=== عرض قائمة الملفات المرفوعة ==="
-          ls -la
-          
-          # البحث عن مجلد يحتوي على build.gradle أو build.gradle.kts
-          TARGET_DIR=$(find . -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec dirname {} \; | head -n 1)
-          
+          echo "جاري فك ضغط ملف المشروع..."
+          unzip -o ZestyV1_CloudBuild.zip -d extracted_project
+          ls -la extracted_project
+
+      - name: Build APK
+        run: |
+          TARGET_DIR=$(find extracted_project -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec dirname {} \; | head -n 1)
           if [ -z "$TARGET_DIR" ]; then
-            echo "خطأ: لم يتم العثور على أي ملفات بناء Android (build.gradle) في المستودع!"
-            echo "يرجى التأكد من رفع ملفات المشروع وليس الملف المضغوط .zip"
+            echo "خطأ: لم يتم العثور على ملفات البناء حتى بعد فك الضغط!"
             exit 1
           fi
-          
-          echo "تم العثور على المشروع في المسار: $TARGET_DIR"
+          echo "تم العثور على المشروع في: $TARGET_DIR"
           cd "$TARGET_DIR"
           gradle assembleDebug
 
