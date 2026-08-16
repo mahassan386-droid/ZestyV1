@@ -19,7 +19,7 @@ jobs:
         run: |
           unzip -o ZestyV1_CloudBuild.zip -d extracted_project
 
-      - name: Build APK
+      - name: Fix Compatibility and Build
         run: |
           TARGET_DIR=$(find extracted_project -maxdepth 2 -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) -exec dirname {} \; | head -n 1)
           if [ -z "$TARGET_DIR" ]; then
@@ -27,12 +27,13 @@ jobs:
           fi
           cd "$TARGET_DIR"
           
-          # توحيد خيارات الترجمة لكود Java و Kotlin للنسخة 1.8 ومنع التحقق المتعارض
-          gradle assembleDebug \
-            -Pkotlin.compiler.jvmTarget=1.8 \
-            -Pandroid.kotlinOptions.jvmTarget=1.8 \
-            -Pkotlin.daemon.jvm.options="-Dkotlin.jvm.target=1.8" \
-            -Dorg.gradle.jvmargs="-Xmx2048m"
+          # تعديل إعدادات Java في app/build.gradle.kts لتصبح 17 تلقائياً
+          if [ -f "app/build.gradle.kts" ]; then
+            sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' app/build.gradle.kts
+            sed -i 's/JVM_1_8/JVM_17/g' app/build.gradle.kts
+          fi
+
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
