@@ -15,16 +15,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build APK
+      - name: Find and Build
         run: |
-          # البحث عن المكان الذي يحتوي على ملفات المشروع والدخول إليه
-          if [ -f "build.gradle.kts" ] || [ -f "build.gradle" ]; then
-            gradle assembleDebug
-          else
-            DIR=$(find . -maxdepth 2 -name "build.gradle.kts" -o -name "build.gradle" | head -n 1 | xargs dirname)
-            cd "$DIR"
-            gradle assembleDebug
+          echo "=== عرض قائمة الملفات المرفوعة ==="
+          ls -la
+          
+          # البحث عن مجلد يحتوي على build.gradle أو build.gradle.kts
+          TARGET_DIR=$(find . -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec dirname {} \; | head -n 1)
+          
+          if [ -z "$TARGET_DIR" ]; then
+            echo "خطأ: لم يتم العثور على أي ملفات بناء Android (build.gradle) في المستودع!"
+            echo "يرجى التأكد من رفع ملفات المشروع وليس الملف المضغوط .zip"
+            exit 1
           fi
+          
+          echo "تم العثور على المشروع في المسار: $TARGET_DIR"
+          cd "$TARGET_DIR"
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
