@@ -25,11 +25,14 @@ jobs:
           if [ -z "$TARGET_DIR" ]; then
             TARGET_DIR="extracted_project"
           fi
-          echo "تم العثور على جذر المشروع في: $TARGET_DIR"
           cd "$TARGET_DIR"
           
-          # توحيد إصدارات Java مع Kotlin لمنع التعارض
-          gradle assembleDebug -Dorg.gradle.jvmargs="-Xmx2048m" -Pandroid.useAndroidX=true -Dorg.gradle.java.home=$JAVA_HOME
+          # توحيد خيارات الترجمة لكود Java و Kotlin للنسخة 1.8 ومنع التحقق المتعارض
+          gradle assembleDebug \
+            -Pkotlin.compiler.jvmTarget=1.8 \
+            -Pandroid.kotlinOptions.jvmTarget=1.8 \
+            -Pkotlin.daemon.jvm.options="-Dkotlin.jvm.target=1.8" \
+            -Dorg.gradle.jvmargs="-Xmx2048m"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
